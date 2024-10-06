@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Daily Planner</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f0f4f8;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+            color: #4A90E2;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+        }
+        .tab {
+            display: none;
+        }
+        .tab.active {
+            display: block;
+        }
+        .tabs {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+        .tabs button {
+            padding: 10px;
+            border: none;
+            background-color: #4A90E2;
+            color: white;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .tabs button:hover {
+            background-color: #357ABD;
+        }
+        .add-task, .add-note, .add-syllabus {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+        input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-right: 10px;
+        }
+        button {
+            padding: 10px 15px;
+            background-color: #4A90E2;
+            border: none;
+            color: white;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #357ABD;
+        }
+        .timetable, .notes-table, .syllabus-table {
+            margin-top: 20px;
+            border-collapse: collapse;
+            width: 100%;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #4A90E2;
+            color: white;
+        }
+        .delete-button {
+            background-color: red;
+            padding: 5px;
+            border: none;
+            border-radius: 4px;
+            color: white;
+            cursor: pointer;
+        }
+        .delete-button:hover {
+            background-color: darkred;
+        }
+        .feedback {
+            color: green;
+            margin-top: 10px;
+            font-weight: bold;
+            display: none;
+        }
+        .login-form, .register-form {
+            margin: 20px 0;
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Advanced Daily Planner</h1>
+
+        <div id="authContainer">
+            <div class="login-form">
+                <h2>Login</h2>
+                <input type="text" id="usernameInput" placeholder="Username" />
+                <input type="password" id="passwordInput" placeholder="Password" />
+                <button onclick="login()">Login</button>
+                <p>Don't have an account? <span onclick="showRegister()">Register</span></p>
+            </div>
+
+            <div class="register-form hidden">
+                <h2>Register</h2>
+                <input type="text" id="newUsernameInput" placeholder="Username" />
+                <input type="password" id="newPasswordInput" placeholder="Password" />
+                <button onclick="register()">Create Account</button>
+                <p>Already have an account? <span onclick="showLogin()">Login</span></p>
+            </div>
+        </div>
+
+        <div class="feedback" id="feedbackMessage"></div>
+
+        <div class="tabs hidden" id="tabs">
+            <button onclick="showTab('taskTab')">Tasks & Timetable</button>
+            <button onclick="showTab('notesTab')">Notes & Study Tracker</button>
+            <button onclick="showTab('syllabusTab')">Syllabus Planner</button>
+            <button onclick="showTab('weekendTab')">Weekend Timetable</button>
+        </div>
+
+        <!-- Tasks & Timetable Tab -->
+        <div id="taskTab" class="tab active">
+            <div id="taskList"></div>
+            <div class="add-task">
+                <input type="text" id="taskInput" placeholder="Add a new task..." />
+                <select id="timeInput"></select>
+                <button onclick="addTask()">Add</button>
+            </div>
+            <table class="timetable">
+                <thead>
+                    <tr>
+                        <th>Time</th>
+                        <th>Task</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="timetableBody"></tbody>
+            </table>
+        </div>
+
+        <!-- Notes & Study Tracker Tab -->
+        <div id="notesTab" class="tab">
+            <h2>Notes</h2>
+            <div class="add-note">
+                <input type="text" id="noteInput" placeholder="Add a new note..." />
+                <button onclick="addNote()">Add Note</button>
+            </div>
+            <table class="notes-table">
+                <thead>
+                    <tr>
+                        <th>Note</th>
+                        <th>Checklist</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="notesBody"></tbody>
+            </table>
+        </div>
+
+        <!-- Syllabus Planner Tab -->
+        <div id="syllabusTab" class="tab">
+            <h2>Syllabus Planner</h2>
+            <div class="add-syllabus">
+                <input type="text" id="syllabusInput" placeholder="Enter syllabus topic..." />
+                <input type="number" id="daysInput" placeholder="Days to complete" />
+                <button onclick="generateSyllabus()">Generate Timetable</button>
+            </div>
+            <table class="syllabus-table">
+                <thead>
+                    <tr>
+                        <th>Topic</th>
+                        <th>Time Allocated</th>
+                        <th>Daily Study Plan</th>
+                    </tr>
+                </thead>
+                <tbody id="syllabusBody"></tbody>
+            </table>
+        </div>
+
+        <!-- Weekend Timetable Tab -->
+        <div id="weekendTab" class="tab">
+            <h2>Weekend Timetable</h2>
+            <div class="add-task">
+                <input type="text" id="weekendTaskInput" placeholder="Add a new weekend task..." />
+                <select id="weekendTimeInput"></select>
+                <button onclick="addWeekendTask()">Add</button>
+            </div>
+            <table class="timetable">
+                <thead>
+                    <tr>
+                        <th>Time</th>
+                        <th>Task</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="weekendTimetableBody"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        let currentUser = null;
+
+        // User data storage
+        const users = JSON.parse(localStorage.getItem('users')) || {};
+
+        // Populate time selections
+        const timeInput = document.getElementById('timeInput');
+        const weekendTimeInput = document.getElementById('weekendTimeInput');
+        for (let hour = 0; hour < 24; hour++) {
+            const hourStr = hour < 10 ? '0' + hour : hour;
+            timeInput.innerHTML += `<option value="${hourStr}:00">${hourStr}:00</option>`;
+            timeInput.innerHTML += `<option value="${hourStr}:30">${hourStr}:30</option>`;
+            weekendTimeInput.innerHTML += `<option value="${hourStr}:00">${hourStr}:00</option>`;
+            weekendTimeInput.innerHTML += `<option value="${hourStr}:30">${hourStr}:30</option>`;
+        }
+
+        function showTab(tabId) {
+            const tabs = document.querySelectorAll('.tab');
+            tabs.forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.getElementById(tabId).classList.add('active');
+        }
+
+        function showFeedback(message) {
+            const feedbackMessage = document.getElementById('feedbackMessage');
+            feedbackMessage.innerText = message;
+            feedbackMessage.style.display = 'block';
+            setTimeout(() => {
+                feedbackMessage.style.display = 'none';
+            }, 3000);
+        }
+
+        function login() {
+            const username = document.getElementById('usernameInput').value;
+            const password = document.getElementById('passwordInput').value;
+
+            if (users[username] && users[username].password === password) {
+                currentUser = username;
+                loadUserData();
+                document.getElementById('authContainer').style.display = 'none';
+                document.getElementById('tabs').classList.remove('hidden');
+                showFeedback(`Welcome, ${currentUser}!`);
+            } else {
+                showFeedback("Invalid username or password.");
+            }
+        }
+
+        function register() {
+            const newUsername = document.getElementById('newUsernameInput').value;
+            const newPassword = document.getElementById('newPasswordInput').value;
+
+            if (users[newUsername]) {
+                showFeedback("Username already exists.");
+                return;
+            }
+
+            users[newUsername] = { password: newPassword, tasks: [], notes: [], syllabus: [] };
+            localStorage.setItem('users', JSON.stringify(users));
+            showFeedback("Account created successfully!");
+            showLogin();
+        }
+
+        function loadUserData() {
+            const userData = users[currentUser];
+            timetable = userData.tasks;
+            notes = userData.notes;
+            syllabus = userData.syllabus;
+            renderTimetable();
+            renderNotes();
+            renderSyllabus();
+        }
+
+        function renderTimetable() {
+            const timetableBody = document.getElementById('timetableBody');
+            timetableBody.innerHTML = ''; // Clear existing rows
+            timetable.forEach((item, index) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${item.time}</td>
+                    <td>${item.task}</td>
+                    <td><button class="delete-button" onclick="deleteTask(${index})">Delete</button></td>
+                `;
+                timetableBody.appendChild(row);
+            });
+        }
+
+        function addTask() {
+            const taskInput = document.getElementById('taskInput');
+            const timeInput = document.getElementById('timeInput');
+            const taskText = taskInput.value.trim();
+            const timeText = timeInput.value;
+
+            if (taskText === '' || timeText === '') {
+                alert("Please enter both a task and a time.");
+                return; // Do not add empty tasks or time
+            }
+
+            timetable.push({ time: timeText, task: taskText });
+            users[currentUser].tasks = timetable;
+            localStorage.setItem('users', JSON.stringify(users)); // Save to local storage
+            renderTimetable(); // Refresh the timetable
+            showFeedback("Task added successfully!");
+
+            taskInput.value = ''; // Clear the task input
+            timeInput.selectedIndex = 0; // Reset time selection
+        }
+
+        function deleteTask(index) {
+            timetable.splice(index, 1);
+            users[currentUser].tasks = timetable;
+            localStorage.setItem('users', JSON.stringify(users));
+            renderTimetable();
+            showFeedback("Task deleted successfully!");
+        }
+
+        function renderNotes() {
+            const notesBody = document.getElementById('notesBody');
+            notesBody.innerHTML = ''; // Clear existing rows
+            notes.forEach((note, index) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${note.text}</td>
+                    <td><input type="checkbox" onchange="toggleChecklist(${index})" ${note.checked ? 'checked' : ''}></td>
+                    <td><button class="delete-button" onclick="deleteNote(${index})">Delete</button></td>
+                `;
+                notesBody.appendChild(row);
+            });
+        }
+
+        function addNote() {
+            const noteInput = document.getElementById('noteInput');
+            const noteText = noteInput.value.trim();
+
+            if (noteText === '') {
+                alert("Please enter a note.");
+                return; // Do not add empty notes
+            }
+
+            notes.push({ text: noteText, checked: false });
+            users[currentUser].notes = notes;
+            localStorage.setItem('users', JSON.stringify(users)); // Save to local storage
+            renderNotes(); // Refresh the notes
+            showFeedback("Note added successfully!");
+
+            noteInput.value = ''; // Clear the note input
+        }
+
+        function toggleChecklist(index) {
+            notes[index].checked = !notes[index].checked;
+            users[currentUser].notes = notes;
+            localStorage.setItem('users', JSON.stringify(users));
+            renderNotes();
+        }
+
+        function deleteNote(index) {
+            notes.splice(index, 1);
+            users[currentUser].notes = notes;
+            localStorage.setItem('users', JSON.stringify(users));
+            renderNotes();
+            showFeedback("Note deleted successfully!");
+        }
+
+        function renderSyllabus() {
+            const syllabusBody = document.getElementById('syllabusBody');
+            syllabusBody.innerHTML = ''; // Clear existing rows
+            syllabus.forEach((item) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${item.topic}</td>
+                    <td>${item.timeAllocated}</td>
+                    <td>${item.dailyPlan}</td>
+                `;
+                syllabusBody.appendChild(row);
+            });
+        }
+
+        function generateSyllabus() {
+            const syllabusInput = document.getElementById('syllabusInput');
+            const daysInput = document.getElementById('daysInput');
+            const topic = syllabusInput.value.trim();
+            const days = parseInt(daysInput.value, 10);
+
+            if (topic === '' || isNaN(days) || days <= 0) {
+                alert("Please enter a valid topic and number of days.");
+                return;
+            }
+
+            const timeAllocated = 24 / days; // Simple distribution of time
+            const dailyPlan = `Study ${topic} for ${timeAllocated.toFixed(2)} hours each day.`;
+            syllabus.push({ topic, timeAllocated: timeAllocated.toFixed(2), dailyPlan });
+            users[currentUser].syllabus = syllabus;
+            localStorage.setItem('users', JSON.stringify(users));
+            renderSyllabus();
+            showFeedback("Syllabus generated successfully!");
+
+            syllabusInput.value = ''; // Clear the syllabus input
+            daysInput.value = ''; // Clear the days input
+        }
+
+        function showLogin() {
+            document.querySelector('.login-form').classList.remove('hidden');
+            document.querySelector('.register-form').classList.add('hidden');
+        }
+
+        function showRegister() {
+            document.querySelector('.login-form').classList.add('hidden');
+            document.querySelector('.register-form').classList.remove('hidden');
+        }
+
+    </script>
+</body>
+</html>
